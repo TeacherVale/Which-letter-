@@ -10,47 +10,48 @@
             font-family: 'Arial Rounded MT Bold', Arial, sans-serif;
             background: radial-gradient(circle, #ff9a9e 0%, #fad0c4 100%);
             display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0;
+            overflow-x: hidden;
         }
         h1 { color: #2e86de; text-shadow: 2px 2px white; margin-top: 20px; font-size: 35px; }
+        #gameGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 20px; max-width: 650px; }
         
-        #gameGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 20px; max-width: 700px; }
-        .box-container { width: 140px; height: 140px; perspective: 1000px; cursor: pointer; }
+        .box-container { width: 130px; height: 130px; perspective: 1000px; cursor: pointer; }
         .box {
             width: 100%; height: 100%; position: relative; transform-style: preserve-3d;
-            transition: transform 0.5s; background: #feca57; border: 5px solid white; border-radius: 20px;
-            display: flex; justify-content: center; align-items: center; box-shadow: 0 6px 0 #ee5253;
+            transition: transform 0.5s; background: #feca57; border: 4px solid white; border-radius: 15px;
+            display: flex; justify-content: center; align-items: center; box-shadow: 0 5px 0 #ee5253;
         }
-        .box.opened { transform: rotateY(180deg); background: #e0f7fa; }
-        .box.solved { background-color: #a5d6a7; border-color: #2ecc71; box-shadow: 0 6px 0 #43a047; }
+        .box.opened { transform: rotateY(180deg); background-color: #e0f7fa; }
+        .box.solved { background-color: #a5d6a7; border-color: #2ecc71; box-shadow: 0 5px 0 #43a047; }
         
-        .content { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .content { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 5px; }
         .back { transform: rotateY(180deg); }
-        .img-card { width: 70%; height: 70%; object-fit: contain; }
         
-        /* ETIQUETA QUE APARECE DESPUÉS */
-        .name-label { 
-            display: none; font-size: 20px; color: #2e86de; font-weight: bold; 
-            margin-top: 5px; background: white; padding: 2px 10px; border-radius: 10px; 
-        }
+        /* ESTILO PARA IMÁGENES (.PNG/.JPG) */
+        .img-card { max-width: 80%; max-height: 80%; object-fit: contain; flex-grow: 1; }
+        
+        /* --- ESTILO CORREGIDO PARA EMOJIS GIGANTES (GUITARRA, ETC) --- */
+        .emoji-card { font-size: 80px; margin-top: -10px; flex-grow: 1; display: flex; align-items: center; }
 
-        /* PANEL DE OPCIONES ALINEADAS */
+        /* ETIQUETA DE PALABRA (DESPUÉS DE RESPUESTA CORRECTA) */
+        .name-label { display: none; font-size: 18px; color: #2e86de; font-weight: bold; background: white; padding: 2px 10px; border-radius: 10px; margin-top: 5px; }
+
+        /* PANEL DE OPCIONES ALINEADAS 2x2 */
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100; }
-        .pane { 
-            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            background: white; padding: 30px; border-radius: 35px; border: 8px solid #54a0ff; z-index: 101; text-align: center;
-        }
+        .pane { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 25px; border-radius: 30px; border: 8px solid #54a0ff; z-index: 101; text-align: center; width: 300px; }
         
-        .btn-row { display: flex; justify-content: center; gap: 10px; margin-top: 20px; }
+        .btn-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px; justify-items: center; }
         .btn { 
-            font-size: 40px; width: 85px; height: 85px; border-radius: 50%; color: white; cursor: pointer;
-            border: 6px solid white !important; /* BORDE BLANCO */
+            font-size: 40px; width: 90px; height: 90px; border-radius: 50%; color: white; cursor: pointer;
+            border: 6px solid white !important; 
             font-weight: bold; box-shadow: 0 5px 0 rgba(0,0,0,0.2); transition: transform 0.1s;
         }
-        .btn:active { transform: scale(0.95); }
+        .btn:active { transform: scale(0.9); }
         .btn-C { background: #FF5252; } .btn-G { background: #4CAF50; } 
         .btn-I { background: #2196F3; } .btn-N { background: #FFEB3B; color: #333; }
 
-        #oops { display: none; position: fixed; top: 45%; background: white; padding: 25px; border-radius: 25px; border: 6px solid #ff4757; color: #ff4757; z-index: 200; font-size: 35px; font-weight: bold; box-shadow: 0 0 30px rgba(0,0,0,0.3); }
+        #oops { display: none; position: fixed; top: 40%; background: white; padding: 20px; border-radius: 20px; border: 5px solid red; z-index: 200; font-size: 30px; text-align: center; color: red; font-weight: bold; }
+        #win { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; flex-direction: column; justify-content: center; align-items: center; z-index: 200; }
     </style>
 </head>
 <body>
@@ -60,16 +61,20 @@
 
     <div class="overlay" id="overlay"></div>
     <div class="pane" id="pane">
-        <div id="img-target" style="font-size: 100px;"></div>
-        <div class="btn-row">
+        <div id="img-target" style="display: flex; justify-content: center; align-items: center;"></div>
+        <div class="btn-grid">
             <button class="btn btn-C" onclick="check('C')">C</button>
             <button class="btn btn-G" onclick="check('G')">G</button>
             <button class="btn btn-I" onclick="check('I')">I</button>
             <button class="btn btn-N" onclick="check('N')">N</button>
         </div>
     </div>
-
-    <div id="oops">OOPS! ❌ Try again!</div>
+    
+    <div id="oops">OOPS! ❌<br>Try again!</div>
+    <div id="win">
+        <h2 style="font-size: 45px; color: #2ecc71;">EXCELLENT! 🌟🏆</h2>
+        <button onclick="location.reload()" style="padding: 15px 30px; font-size: 20px; cursor: pointer; border-radius: 15px;">PLAY AGAIN</button>
+    </div>
 
     <script>
         const gameData = [
@@ -77,6 +82,7 @@
             { name: 'CAR', letter: 'C', type: 'emoji', value: '🚗' },
             { name: 'CAKE', letter: 'C', type: 'emoji', value: '🎂' },
             { name: 'GRANDMA', letter: 'G', type: 'emoji', value: '👵' },
+            // AHORA LA GUITARRA SE VERÁ GIGANTE
             { name: 'GUITAR', letter: 'G', type: 'emoji', value: '🎸' },
             { name: 'GRAPES', letter: 'G', type: 'emoji', value: '🍇' },
             { name: 'INSECT', letter: 'I', type: 'emoji', value: '🪲' },
@@ -87,7 +93,7 @@
             { name: 'NURSE', letter: 'N', type: 'img', value: 'nurse.png' }
         ];
 
-        let active = null, activeIdx = null;
+        let active = null, activeIdx = null, solved = 0;
 
         function init() {
             const grid = document.getElementById('gameGrid');
@@ -97,7 +103,7 @@
                 box.innerHTML = `<div class="box" id="box-${i}" onclick="openBox(${i})">
                     <div class="content front" style="font-size:50px; color:white;">${i+1}</div>
                     <div class="content back" id="back-${i}">
-                        ${d.type === 'img' ? `<img src="${d.value}" class="img-card">` : `<span>${d.value}</span>`}
+                        ${d.type === 'img' ? `<img src="${d.value}" class="img-card">` : `<span class="emoji-card">${d.value}</span>`}
                         <div class="name-label" id="label-${i}">${d.name}</div>
                     </div>
                 </div>`;
@@ -109,14 +115,13 @@
             if (active) return;
             activeIdx = i;
             const backDiv = document.getElementById(`back-${i}`);
-            // Identificar qué objeto es comparando el contenido
             active = gameData.find(d => backDiv.innerHTML.includes(d.value));
             
             document.getElementById(`box-${i}`).classList.add('opened');
             setTimeout(() => {
-                // Solo pasamos el emoji o imagen al panel, sin el label todavía
-                const iconOnly = active.type === 'img' ? `<img src="${active.value}" style="width:150px;">` : active.value;
-                document.getElementById('img-target').innerHTML = iconOnly;
+                // Clonamos el contenido sin el label oculto
+                const iconContent = active.type === 'img' ? `<img src="${active.value}" style="width:150px;">` : `<span style="font-size:120px;">${active.value}</span>`;
+                document.getElementById('img-target').innerHTML = iconContent;
                 document.getElementById('overlay').style.display = 'block';
                 document.getElementById('pane').style.display = 'block';
             }, 600);
@@ -127,8 +132,8 @@
             document.getElementById('overlay').style.display = 'none';
             if (l === active.letter) {
                 confetti();
+                solved++;
                 document.getElementById(`box-${activeIdx}`).classList.add('solved');
-                // AQUÍ APARECE LA PALABRA DESPUÉS DE LA RESPUESTA
                 document.getElementById(`label-${activeIdx}`).style.display = 'block';
                 
                 if ('speechSynthesis' in window) {
@@ -136,6 +141,7 @@
                     msg.lang = 'en-US'; window.speechSynthesis.speak(msg);
                 }
                 active = null;
+                if(solved === 12) document.getElementById('win').style.display = 'flex';
             } else {
                 document.getElementById('oops').style.display = 'block';
                 setTimeout(() => {
