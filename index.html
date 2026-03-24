@@ -10,16 +10,28 @@
             font-family: 'Arial Rounded MT Bold', Arial, sans-serif;
             background: radial-gradient(circle, #ff9a9e 0%, #fad0c4 100%);
             display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0;
-            overflow-x: hidden; transition: filter 0.5s;
+            overflow-x: hidden;
         }
-        h1 { color: #2e86de; text-shadow: 2px 2px white; margin-top: 20px; font-size: 35px; }
-        #score-board { font-size: 22px; background: white; padding: 5px 20px; border-radius: 50px; margin-top: 5px; color: #ff4757; border: 3px solid #ff4757; box-shadow: 0 4px 0 #ff4757; }
         
-        /* ESTILO DEL BLUR AL FINAL */
-        body.blured #main-container { filter: blur(8px); }
+        /* TÍTULO Y SCORE CENTRADOS */
+        header { text-align: center; width: 100%; margin-top: 20px; }
+        h1 { color: #2e86de; text-shadow: 2px 2px white; margin: 0; font-size: 35px; }
+        #score-board { 
+            display: inline-block; font-size: 22px; background: white; padding: 5px 25px; 
+            border-radius: 50px; margin-top: 10px; color: #ff4757; border: 3px solid #ff4757; 
+            box-shadow: 0 4px 0 #ff4757; 
+        }
 
-        #gameGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 20px; max-width: 650px; }
-        .box-container { width: 130px; height: 130px; perspective: 1000px; cursor: pointer; }
+        /* CONTENEDOR PRINCIPAL PARA EL BLUR */
+        #main-wrapper { width: 100%; display: flex; flex-direction: column; align-items: center; transition: filter 0.5s; }
+        body.blured #main-wrapper { filter: blur(8px); pointer-events: none; }
+
+        /* TABLERO CON CAJAS MÁS JUNTAS */
+        #gameGrid { 
+            display: grid; grid-template-columns: repeat(4, 1fr); 
+            gap: 8px; padding: 15px; max-width: 580px; margin-top: 10px;
+        }
+        .box-container { width: 120px; height: 120px; perspective: 1000px; cursor: pointer; }
         .box {
             width: 100%; height: 100%; position: relative; transform-style: preserve-3d;
             transition: transform 0.5s; background: #feca57; border: 4px solid white; border-radius: 15px;
@@ -28,55 +40,63 @@
         .box.opened { transform: rotateY(180deg); background-color: #e0f7fa; }
         .box.solved { background-color: #a5d6a7; border-color: #2ecc71; box-shadow: 0 5px 0 #43a047; }
         
-        .content { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 5px; }
+        .content { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         .back { transform: rotateY(180deg); }
-        .img-card { max-width: 80%; max-height: 80%; object-fit: contain; flex-grow: 1; }
-        .emoji-card { font-size: 80px; margin-top: -10px; flex-grow: 1; display: flex; align-items: center; }
+        .img-card { max-width: 80%; max-height: 70%; object-fit: contain; }
+        .emoji-card { font-size: 75px; line-height: 1; }
 
-        /* ETIQUETA DE PALABRA (DESPUÉS DE RESPUESTA CORRECTA) */
-        .name-label { display: none; font-size: 18px; color: #2e86de; font-weight: bold; background: white; padding: 2px 10px; border-radius: 10px; margin-top: 5px; }
+        .name-label { display: none; font-size: 16px; color: #2e86de; font-weight: bold; background: white; padding: 2px 8px; border-radius: 8px; margin-top: 4px; }
 
-        /* PANEL DE OPCIONES 2x2 */
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100; }
-        .pane { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 25px; border-radius: 30px; border: 8px solid #54a0ff; z-index: 101; text-align: center; width: 300px; }
-        
-        .btn-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px; justify-items: center; }
-        .btn { 
-            font-size: 40px; width: 90px; height: 90px; border-radius: 50%; color: white; cursor: pointer;
-            border: 6px solid white !important; 
-            font-weight: bold; box-shadow: 0 5px 0 rgba(0,0,0,0.2); transition: transform 0.1s;
+        /* PANEL DE OPCIONES COMPACTO 2x2 */
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 100; }
+        .pane { 
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            background: white; padding: 25px; border-radius: 30px; border: 8px solid #54a0ff; 
+            z-index: 101; text-align: center; width: 280px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
-        .btn:active { transform: scale(0.9); }
+        
+        .btn-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 15px; justify-items: center; }
+        .btn { 
+            font-size: 38px; width: 85px; height: 85px; border-radius: 50%; color: white; cursor: pointer;
+            border: 6px solid white !important; font-weight: bold; box-shadow: 0 5px 0 rgba(0,0,0,0.1); transition: transform 0.1s;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .btn:active { transform: scale(0.95); }
         .btn-C { background: #FF5252; } .btn-G { background: #4CAF50; } 
         .btn-I { background: #2196F3; } .btn-N { background: #FFEB3B; color: #333; }
 
-        #oops { display: none; position: fixed; top: 40%; background: white; padding: 20px; border-radius: 20px; border: 5px solid red; z-index: 200; font-size: 30px; text-align: center; color: red; font-weight: bold; }
+        #oops { display: none; position: fixed; top: 40%; background: white; padding: 20px; border-radius: 20px; border: 5px solid red; z-index: 200; font-size: 28px; text-align: center; color: red; font-weight: bold; }
 
-        /* PANTALLA DE VICTORIA FINAL */
-        #win { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; flex-direction: column; justify-content: center; align-items: center; z-index: 200; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-        
-        /* BOTÓN PLAY AGAIN EN VERDE SOLICITADO */
-        .btn-restart { 
-            padding: 15px 30px; font-size: 25px; cursor: pointer; border-radius: 25px; 
-            background: #2ecc71; color: white; border: none; 
-            box-shadow: 0 5px 0 #27ae60; transition: transform 0.1s; font-weight: bold;
+        /* PANTALLA FINAL */
+        #win-screen { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            flex-direction: column; justify-content: center; align-items: center; z-index: 300; 
         }
-        .btn-restart:active { transform: scale(0.95); box-shadow: 0 2px 0 #27ae60; }
-
+        .win-card { 
+            background: white; padding: 40px; border-radius: 40px; border: 8px solid #2ecc71; 
+            text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        }
+        .btn-restart { 
+            padding: 15px 40px; font-size: 24px; cursor: pointer; border-radius: 50px; 
+            background: #2ecc71; color: white; border: none; font-weight: bold;
+            box-shadow: 0 6px 0 #27ae60; transition: 0.2s; margin-top: 20px;
+        }
+        .btn-restart:hover { background: #27ae60; }
     </style>
 </head>
 <body>
 
-    <div id="main-container">
-        <h1>WHICH LETTER?</h1>
-        <div id="score-board">POINTS: <span id="points">0</span></div>
+    <div id="main-wrapper">
+        <header>
+            <h1>WHICH LETTER?</h1>
+            <div id="score-board">POINTS: <span id="points">0</span></div>
+        </header>
         <div id="gameGrid"></div>
     </div>
 
     <div class="overlay" id="overlay"></div>
     <div class="pane" id="pane">
-        <div id="img-target" style="display: flex; justify-content: center; align-items: center;"></div>
+        <div id="img-target" style="display: flex; justify-content: center; align-items: center; min-height: 120px;"></div>
         <div class="btn-grid">
             <button class="btn btn-C" onclick="check('C')">C</button>
             <button class="btn btn-G" onclick="check('G')">G</button>
@@ -87,10 +107,10 @@
     
     <div id="oops">OOPS! ❌<br>Try again!</div>
 
-    <div id="win">
-        <div style="background: white; padding: 40px; border-radius: 40px; border: 8px solid #2ecc71; text-align: center; box-shadow: 0 0 50px rgba(0,0,0,0.2);">
-            <h2 style="font-size: 45px; color: #2ecc71; margin:0;">EXCELLENT! 🌟🏆</h2>
-            <div style="font-size: 100px; margin: 20px 0;">🏆</div>
+    <div id="win-screen">
+        <div class="win-card">
+            <h2 style="font-size: 40px; color: #2ecc71; margin:0;">EXCELLENT! 🌟</h2>
+            <div style="font-size: 110px; margin: 15px 0;">🏆</div>
             <button onclick="location.reload()" class="btn-restart">PLAY AGAIN</button>
         </div>
     </div>
@@ -111,7 +131,7 @@
             { name: 'NURSE', letter: 'N', type: 'img', value: 'nurse.png' }
         ];
 
-        let score = 0, solved = 0, active = null, activeIdx = null;
+        let score = 0, solvedCount = 0, active = null, activeIdx = null;
 
         function init() {
             const grid = document.getElementById('gameGrid');
@@ -119,7 +139,7 @@
                 const box = document.createElement('div');
                 box.className = 'box-container';
                 box.innerHTML = `<div class="box" id="box-${i}" onclick="openBox(${i})">
-                    <div class="content front" style="font-size:50px; color:white;">${i+1}</div>
+                    <div class="content front" style="font-size:45px; color:white;">${i+1}</div>
                     <div class="content back" id="back-${i}">
                         ${d.type === 'img' ? `<img src="${d.value}" class="img-card">` : `<span class="emoji-card">${d.value}</span>`}
                         <div class="name-label" id="label-${i}">${d.name}</div>
@@ -130,15 +150,15 @@
         }
 
         function openBox(i) {
-            if (active) return;
+            if (active || document.getElementById(`box-${i}`).classList.contains('solved')) return;
             activeIdx = i;
             const backDiv = document.getElementById(`back-${i}`);
             active = gameData.find(d => backDiv.innerHTML.includes(d.value));
             
             document.getElementById(`box-${i}`).classList.add('opened');
             setTimeout(() => {
-                const iconContent = active.type === 'img' ? `<img src="${active.value}" style="width:150px;">` : `<span style="font-size:120px;">${active.value}</span>`;
-                document.getElementById('img-target').innerHTML = iconContent;
+                const display = active.type === 'img' ? `<img src="${active.value}" style="width:140px;">` : `<span style="font-size:110px;">${active.value}</span>`;
+                document.getElementById('img-target').innerHTML = display;
                 document.getElementById('overlay').style.display = 'block';
                 document.getElementById('pane').style.display = 'block';
             }, 600);
@@ -149,7 +169,7 @@
             document.getElementById('overlay').style.display = 'none';
             if (l === active.letter) {
                 confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-                score += 10; solved++;
+                score += 10; solvedCount++;
                 document.getElementById('points').innerText = score;
                 document.getElementById(`box-${activeIdx}`).classList.add('solved');
                 document.getElementById(`label-${activeIdx}`).style.display = 'block';
@@ -160,15 +180,12 @@
                 }
                 active = null;
 
-                // EFECTO DE BLUR Y VICTORIA AL FINAL
-                if(solved === 12) {
+                if(solvedCount === 12) {
                     setTimeout(() => {
-                        // Confetti extra de victoria
-                        confetti({ particleCount: 200, spread: 100, origin: { y: 0.5 } });
-                        // Activamos blur
                         document.body.classList.add('blured');
-                        document.getElementById('win').style.display = 'flex';
-                    }, 2500);
+                        document.getElementById('win-screen').style.display = 'flex';
+                        confetti({ particleCount: 150, spread: 100, origin: { y: 0.5 } });
+                    }, 1500);
                 }
             } else {
                 document.getElementById('oops').style.display = 'block';
