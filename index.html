@@ -10,10 +10,12 @@
             font-family: 'Arial Rounded MT Bold', 'Helvetica', sans-serif;
             background: radial-gradient(circle, #ff9a9e 0%, #fad0c4 100%);
             margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+            overflow-x: hidden;
         }
         header { text-align: center; margin-top: 10px; }
         h1 { font-size: 40px; color: #2e86de; text-shadow: 2px 2px 0px white; margin: 0; }
         #score-board { font-size: 24px; background: white; padding: 5px 20px; border-radius: 50px; margin-top: 5px; color: #ff4757; border: 3px solid #ff4757; box-shadow: 0 4px 0 #ff4757; }
+        
         #gameGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 20px; max-width: 800px; }
         .box-container { width: 150px; height: 150px; perspective: 1000px; cursor: pointer; }
         .box {
@@ -30,10 +32,32 @@
         .image-emoji { font-size: 75px; }
         
         .word-label {
-            display: none; 
-            font-size: 20px; color: #2e86de; font-weight: bold;
+            display: none; font-size: 20px; color: #2e86de; font-weight: bold;
             margin-top: 5px; background: white; padding: 2px 10px; border-radius: 10px;
-            box-shadow: 0 2px 0 #2e86de;
+        }
+
+        /* --- ESTILO PARA EL MENSAJE DE ERROR BONITO --- */
+        #oops-message {
+            display: none;
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px 50px;
+            border-radius: 30px;
+            border: 8px solid #ff4757;
+            color: #ff4757;
+            font-size: 40px;
+            font-weight: bold;
+            text-align: center;
+            z-index: 300;
+            box-shadow: 0 0 50px rgba(0,0,0,0.3);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
         }
 
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 90; }
@@ -57,6 +81,8 @@
 
     <div id="gameGrid"></div>
 
+    <div id="oops-message">OOPS! ❌<br><span style="font-size: 20px;">Try again!</span></div>
+
     <div class="overlay" id="overlay"></div>
     <div class="pane" id="pane">
         <div id="display-area"></div>
@@ -78,7 +104,6 @@
             { name: 'GUITAR', letter: 'G', type: 'emoji', value: '🎸' },
             { name: 'GRAPES', letter: 'G', type: 'emoji', value: '🍇' },
             { name: 'INSECT', letter: 'I', type: 'emoji', value: '🪲' },
-            // ACTUALIZADO A PNG
             { name: 'IGUANA', letter: 'I', type: 'img', value: 'iguana.png' },
             { name: 'IGLOO', letter: 'I', type: 'img', value: 'igloo.png' },
             { name: 'NINE', letter: 'N', type: 'emoji', value: '9️⃣' },
@@ -114,7 +139,7 @@
             box.classList.add('opened');
             
             setTimeout(() => {
-                document.getElementById('display-area').innerHTML = active.type === 'img' ? `<img src="${active.value}" style="width:180px; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.1));">` : `<div style="font-size:120px">${active.value}</div>`;
+                document.getElementById('display-area').innerHTML = active.type === 'img' ? `<img src="${active.value}" style="width:180px;">` : `<div style="font-size:120px">${active.value}</div>`;
                 document.getElementById('overlay').style.display = 'block';
                 document.getElementById('pane').style.display = 'block';
                 const btns = document.getElementById('btns');
@@ -147,10 +172,16 @@
                     if(solved === 12) document.getElementById('win').style.display = 'flex';
                 }, 2000);
             } else {
-                alert("Oops! Try again! ❌");
-                document.getElementById(`box-${activeIdx}`).classList.remove('opened');
-                document.getElementById('overlay').style.display = 'none';
-                active = null;
+                // AQUÍ SE MUESTRA EL MENSAJE BONITO EN LUGAR DEL ALERT
+                const oops = document.getElementById('oops-message');
+                oops.style.display = 'block';
+                
+                setTimeout(() => {
+                    oops.style.display = 'none';
+                    document.getElementById(`box-${activeIdx}`).classList.remove('opened');
+                    document.getElementById('overlay').style.display = 'none';
+                    active = null;
+                }, 1500);
             }
         }
         init();
