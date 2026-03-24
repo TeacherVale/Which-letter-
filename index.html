@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Game: C, G, I, N</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial Rounded MT Bold', 'Helvetica', sans-serif;
+            background: radial-gradient(circle, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header { text-align: center; margin-top: 10px; }
+        h1 { font-size: 45px; color: #2e86de; text-shadow: 3px 3px 0px white; margin: 0; }
+        
+        #score-board {
+            font-size: 24px;
+            background: white;
+            padding: 8px 20px;
+            border-radius: 50px;
+            margin-top: 5px;
+            box-shadow: 0 5px 0 #ff4757;
+            color: #ff4757;
+            border: 3px solid #ff4757;
+        }
+
+        #gameGrid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            padding: 20px;
+            max-width: 800px;
+        }
+
+        .box-container { width: 160px; height: 160px; perspective: 1000px; cursor: pointer; }
+
+        .box {
+            width: 100%; height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            background-color: #feca57;
+            border: 5px solid #fff;
+            border-radius: 20px;
+            box-shadow: 0 6px 0 #ee5253;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        .box.opened { transform: rotateY(180deg); background-color: #e0f7fa; }
+        .box.solved { background-color: #a5d6a7; border-color: #2ecc71; box-shadow: 0 6px 0 #43a047; }
+
+        .content {
+            position: absolute;
+            width: 100%; height: 100%;
+            backface-visibility: hidden;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
+
+        .front { font-size: 70px; color: white; text-shadow: 3px 3px 0px #ee5253; }
+        .back { transform: rotateY(180deg); }
+
+        .image-display { width: 85%; height: 85%; object-fit: contain; border-radius: 10px; }
+        .image-emoji { font-size: 80px; }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 90;
+        }
+
+        .selector-pane {
+            display: none;
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 25px;
+            border-radius: 30px;
+            z-index: 100;
+            text-align: center;
+            width: 85%; max-width: 400px;
+            border: 8px solid #54a0ff;
+        }
+
+        #current-item-img { width: 200px; height: 200px; object-fit: contain; margin-bottom: 15px; display: none; border-radius: 15px; }
+        #current-item-emoji { font-size: 120px; margin-bottom: 15px; display: none; }
+
+        .btn-grid { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+        .btn {
+            font-size: 45px; width: 85px; height: 85px;
+            border: none; border-radius: 50%; color: white; cursor: pointer;
+            display: flex; justify-content: center; align-items: center;
+            transition: transform 0.1s;
+        }
+
+        .btn-C { background-color: #FF5252; box-shadow: 0 6px 0 #D32F2F; }
+        .btn-G { background-color: #4CAF50; box-shadow: 0 6px 0 #388E3C; }
+        .btn-I { background-color: #2196F3; box-shadow: 0 6px 0 #1976D2; }
+        .btn-N { background-color: #FFEB3B; box-shadow: 0 6px 0 #FBC02D; color: #333; }
+
+        #oops-text {
+            display: none;
+            position: fixed;
+            top: 40%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ff4757; font-size: 80px; font-weight: bold;
+            z-index: 200; text-shadow: 3px 3px 0 white;
+        }
+
+        #win-screen {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 300;
+            flex-direction: column; justify-content: center; align-items: center;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>WHICH LETTER?</h1>
+        <div id="score-board">POINTS: <span id="points">0</span></div>
+    </header>
+
+    <div id="gameGrid"></div>
+
+    <div class="overlay" id="overlay"></div>
+    <div class="selector-pane" id="selectorPane">
+        <div style="display: flex; justify-content: center;">
+            <img id="current-item-img" src="">
+        </div>
+        <div id="current-item-emoji"></div>
+        <div class="btn-grid" id="btnContainer"></div>
+    </div>
+
+    <div id="oops-text">OOPS! ❌</div>
+
+    <div id="win-screen">
+        <h2 style="font-size: 60px; color: #2ecc71;">YOU WIN!</h2>
+        <div style="font-size: 120px;">🏆</div>
+        <button style="padding: 15px 30px; font-size: 25px; cursor: pointer; border-radius: 30px; background: #2ecc71; color: white; border: none;" onclick="location.reload()">PLAY AGAIN</button>
+    </div>
+
+    <script>
+        // --- DATA CONFIGURADA CON NOMBRES SIMPLES ---
+        const gameData = [
+            { name: 'CAT', letter: 'C', type: 'emoji', value: '🐱' },
+            { name: 'CAR', letter: 'C', type: 'emoji', value: '🚗' },
+            { name: 'CAKE', letter: 'C', type: 'emoji', value: '🎂' },
+            { name: 'GRANDMA', letter: 'G', type: 'emoji', value: '👵' },
+            { name: 'GUITAR', letter: 'G', type: 'emoji', value: '🎸' },
+            { name: 'GRAPES', letter: 'G', type: 'emoji', value: '🍇' },
+            { name: 'INSECT', letter: 'I', type: 'emoji', value: '🪲' },
+            // Nombres de archivos simplificados
+            { name: 'IGUANA', letter: 'I', type: 'img', value: 'iguana.jpg' },
+            { name: 'IGLOO', letter: 'I', type: 'img', value: 'igloo.jpg' },
+            { name: 'NINE', letter: 'N', type: 'emoji', value: '9️⃣' },
+            { name: 'NOSE', letter: 'N', type: 'emoji', value: '👃' },
+            { name: 'NURSE', letter: 'N', type: 'img', value: 'nurse.jpg' }
+        ];
+
+        let score = 0;
+        let activeData = null;
+        let activeBoxIndex = null;
+        let solvedCount = 0;
+
+        function initGrid() {
+            const grid = document.getElementById('gameGrid');
+            grid.innerHTML = '';
+            const shuffled = [...gameData].sort(() => Math.random() - 0.5);
+            shuffled.forEach((data, index) => {
+                const container = document.createElement('div');
+                container.className = 'box-container';
+                let content = data.type === 'img' 
+                    ? `<img class="image-display" src="${data.value}">` 
+                    : `<div class="image-emoji">${data.value}</div>`;
+                
+                container.innerHTML = `
+                    <div class="box" id="box-${index}" onclick="handleBoxClick(${index}, '${data.name}')">
+                        <div class="content front">${index + 1}</div>
+                        <div class="content back">${content}</div>
+                    </div>
+                `;
+                grid.appendChild(container);
+            });
+        }
+
+        function handleBoxClick(index, name) {
+            const box = document.getElementById(`box-${index}`);
+            if (box.classList.contains('opened') || box.classList.contains('solved') || activeBoxIndex !== null) return;
+            activeBoxIndex = index;
+            activeData = gameData.find(d => d.name === name);
+            box.classList.add('opened');
+            setTimeout(() => {
+                const imgArea = document.getElementById('current-item-img');
+                const emojiArea = document.getElementById('current-item-emoji');
+                if (activeData.type === 'img') {
+                    imgArea.src = activeData.value;
+                    imgArea.style.display = 'block';
+                    emojiArea.style.display = 'none';
+                } else {
+                    emojiArea.innerText = activeData.value;
+                    emojiArea.style.display = 'block';
+                    imgArea.style.display = 'none';
+                }
+                document.getElementById('overlay').style.display = 'block';
+                document.getElementById('selectorPane').style.display = 'block';
+                setupButtons();
+            }, 600);
+        }
+
+        function setupButtons() {
+            const container = document.getElementById('btnContainer');
+            container.innerHTML = '';
+            ['C', 'G', 'I', 'N'].forEach(l => {
+                const b = document.createElement('button');
+                b.className = `btn btn-${l}`;
+                b.innerText = l;
+                b.onclick = () => checkAnswer(l);
+                container.appendChild(b);
+            });
+        }
+
+        function checkAnswer(choice) {
+            document.getElementById('selectorPane').style.display = 'none';
+            const box = document.getElementById(`box-${activeBoxIndex}`);
+            if (choice === activeData.letter) {
+                confetti({ particleCount: 150, spread: 70 });
+                score += 10; solvedCount++;
+                document.getElementById('points').innerText = score;
+                box.classList.add('solved');
+                
+                if ('speechSynthesis' in window) {
+                    const ut = new SpeechSynthesisUtterance(`${activeData.letter} for ${activeData.name}`);
+                    ut.lang = 'en-US'; window.speechSynthesis.speak(ut);
+                }
+
+                setTimeout(() => {
+                    document.getElementById('overlay').style.display = 'none';
+                    activeBoxIndex = null;
+                    if(solvedCount === gameData.length) document.getElementById('win-screen').style.display = 'flex';
+                }, 1500);
+            } else {
+                document.getElementById('oops-text').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('oops-text').style.display = 'none';
+                    document.getElementById('overlay').style.display = 'none';
+                    box.classList.remove('opened');
+                    activeBoxIndex = null;
+                }, 1200);
+            }
+        }
+
+        initGrid();
+    </script>
+</body>
+</html>
